@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Submissions – {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<h2>Submissions for: {{ assignment.title }}</h2>
+<p class="card-meta">Course: {{ assignment.course.title }} | Max Score: {{ assignment.max_score }}</p>
+
+{% if submissions %}
+  <table>
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Submitted</th>
+        <th>Answer (preview)</th>
+        <th>File</th>
+        <th>Grade</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in submissions %}
+      <tr>
+        <td>{{ s.student.username }}</td>
+        <td>{{ s.submitted_at|date:"M d, Y H:i" }}</td>
+        <td>{{ s.content|truncatewords:12 }}</td>
+        <td>
+          {% if s.file %}
+            <a href="{{ s.file.url }}">Download</a>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if s.grade is not None %}
+            {{ s.grade }}/{{ assignment.max_score }}
+            <span class="grade-letter">{{ s.letter_grade }}</span>
+          {% else %}
+            <span class="pending">Ungraded</span>
+          {% endif %}
+        </td>
+        <td><a href="{% url 'grade_submission' s.pk %}" class="btn-sm">Grade</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No submissions yet.</p>
+{% endif %}
+
+<br>
+<a href="{% url 'course_detail' assignment.course.pk %}" class="link-back">← Back to course</a>
+{% endblock %}

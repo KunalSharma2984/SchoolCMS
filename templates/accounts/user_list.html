@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="section-header">
+  <h2>Manage Users</h2>
+</div>
+
+<div class="filter-bar">
+  <a href="{% url 'user_list' %}" class="{% if not role_filter %}active{% endif %}">All</a>
+  <a href="?role=student" class="{% if role_filter == 'student' %}active{% endif %}">Students</a>
+  <a href="?role=teacher" class="{% if role_filter == 'teacher' %}active{% endif %}">Teachers</a>
+  <a href="?role=admin" class="{% if role_filter == 'admin' %}active{% endif %}">Admins</a>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.username }}</td>
+      <td>{{ u.get_full_name|default:"—" }}</td>
+      <td>{{ u.email }}</td>
+      <td><span class="role-badge role-{{ u.role }}">{{ u.get_role_display }}</span></td>
+      <td>{{ u.date_joined|date:"M d, Y" }}</td>
+      <td>
+        <a href="{% url 'user_edit' u.pk %}">Edit</a> |
+        <a href="{% url 'user_delete' u.pk %}" class="link-danger">Delete</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">No users found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

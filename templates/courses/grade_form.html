@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Grade Submission{% endblock %}
+
+{% block content %}
+<h2>Grade Submission</h2>
+
+<div class="submission-info">
+  <p><strong>Student:</strong> {{ submission.student.username }}</p>
+  <p><strong>Assignment:</strong> {{ submission.assignment.title }}</p>
+  <p><strong>Course:</strong> {{ submission.assignment.course.title }}</p>
+  <p><strong>Max Score:</strong> {{ submission.assignment.max_score }}</p>
+  <p><strong>Submitted:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+  <hr>
+  <p><strong>Answer:</strong></p>
+  <div class="description-box">{{ submission.content }}</div>
+  {% if submission.file %}
+    <p><a href="{{ submission.file.url }}">Download submitted file</a></p>
+  {% endif %}
+</div>
+
+<form method="post" class="form-box">
+  {% csrf_token %}
+  {% for field in form %}
+    <div class="field-group">
+      <label>{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+    </div>
+  {% endfor %}
+  <div class="form-actions">
+    <button type="submit" class="btn">Save Grade</button>
+    <a href="{% url 'submission_list' submission.assignment.pk %}" class="btn-outline">Cancel</a>
+  </div>
+</form>
+{% endblock %}

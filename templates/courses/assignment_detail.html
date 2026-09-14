@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}{{ assignment.title }}{% endblock %}
+
+{% block content %}
+<h2>{{ assignment.title }}</h2>
+<p class="card-meta">
+  Course: <a href="{% url 'course_detail' assignment.course.pk %}">{{ assignment.course.title }}</a>
+  &nbsp;|&nbsp; Due: {{ assignment.due_date|default:"No due date" }}
+  &nbsp;|&nbsp; Max Score: {{ assignment.max_score }}
+</p>
+
+{% if assignment.description %}
+  <div class="description-box">{{ assignment.description }}</div>
+{% endif %}
+
+{% if user.is_student %}
+  {% if submission %}
+    <div class="submission-info">
+      <h3>Your Submission</h3>
+      <p><strong>Submitted:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+      <p><strong>Answer:</strong><br>{{ submission.content }}</p>
+      {% if submission.file %}
+        <p><strong>File:</strong> <a href="{{ submission.file.url }}">Download</a></p>
+      {% endif %}
+      {% if submission.grade is not None %}
+        <p><strong>Grade:</strong> {{ submission.grade }}/{{ assignment.max_score }}
+           &nbsp;<span class="grade-letter">{{ submission.letter_grade }}</span></p>
+        {% if submission.feedback %}
+          <p><strong>Feedback:</strong> {{ submission.feedback }}</p>
+        {% endif %}
+      {% else %}
+        <p><span class="pending">Not graded yet</span></p>
+      {% endif %}
+      <a href="{% url 'submit_assignment' assignment.pk %}" class="btn-sm">Update Submission</a>
+    </div>
+  {% else %}
+    <p>You have not submitted this assignment.</p>
+    <a href="{% url 'submit_assignment' assignment.pk %}" class="btn">Submit Assignment</a>
+  {% endif %}
+{% endif %}
+
+{% if user == assignment.course.teacher or user.is_admin %}
+  <div class="form-actions">
+    <a href="{% url 'submission_list' assignment.pk %}" class="btn">View Submissions ({{ assignment.submissions.count }})</a>
+    <a href="{% url 'assignment_delete' assignment.pk %}" class="btn btn-danger">Delete Assignment</a>
+  </div>
+{% endif %}
+
+<br>
+<a href="{% url 'course_detail' assignment.course.pk %}" class="link-back">← Back to course</a>
+{% endblock %}

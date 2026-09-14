@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="section-header">
+  <div>
+    <h2>{{ course.title }}</h2>
+    <p class="card-meta">Teacher: {{ course.teacher.get_full_name|default:course.teacher.username }}</p>
+  </div>
+  {% if user == course.teacher or user.is_admin %}
+    <div>
+      <a href="{% url 'course_edit' course.pk %}" class="btn-sm">Edit</a>
+      <a href="{% url 'course_delete' course.pk %}" class="btn-sm btn-danger">Delete</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if course.description %}
+  <p>{{ course.description }}</p>
+{% endif %}
+
+<!-- Enroll / Unenroll -->
+{% if user.is_student %}
+  {% if is_enrolled %}
+    <p><span class="badge-enrolled">You are enrolled</span>
+    <a href="{% url 'unenroll' course.pk %}" class="link-danger"> (Unenroll)</a></p>
+  {% else %}
+    <a href="{% url 'enroll' course.pk %}" class="btn">Enroll in this Course</a>
+  {% endif %}
+{% endif %}
+
+<!-- Assignments section -->
+<section>
+  <div class="section-header">
+    <h3>Assignments</h3>
+    {% if user == course.teacher %}
+      <a href="{% url 'assignment_create' course.pk %}" class="btn-sm">+ Add Assignment</a>
+    {% endif %}
+  </div>
+
+  {% if user.is_student and is_enrolled %}
+    {% if student_assignments %}
+      <table>
+        <thead>
+          <tr><th>Title</th><th>Due Date</th><th>Max Score</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for assignment, submitted in student_assignments %}
+          <tr>
+            <td><a href="{% url 'assignment_detail' assignment.pk %}">{{ assignment.title }}</a></td>
+            <td>{{ assignment.due_date|default:"No due date" }}</td>
+            <td>{{ assignment.max_score }}</td>
+            <td>
+              {% if submitted %}<span class="badge-submitted">Submitted</span>
+              {% else %}<span class="pending">Not submitted</span>{% endif %}
+            </td>
+            <td>
+              <a href="{% url 'submit_assignment' assignment.pk %}" class="btn-sm">
+                {% if submitted %}Update{% else %}Submit{% endif %}
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No assignments yet.</p>
+    {% endif %}
+
+  {% elif user == course.teacher or user.is_admin %}
+    {% with assignments=course.assignments.all %}
+    {% if assignments %}
+      <table>
+        <thead>
+          <tr><th>Title</th><th>Due Date</th><th>Max Score</th><th>Submissions</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for a in assignments %}
+          <tr>
+            <td><a href="{% url 'assignment_detail' a.pk %}">{{ a.title }}</a></td>
+            <td>{{ a.due_date|default:"—" }}</td>
+            <td>{{ a.max_score }}</td>
+            <td>
+              <a href="{% url 'submission_list' a.pk %}">{{ a.submissions.count }} submission{{ a.submissions.count|pluralize }}</a>
+            </td>
+            <td>
+              <a href="{% url 'submission_list' a.pk %}" class="btn-sm">View Submissions</a>
+              <a href="{% url 'assignment_delete' a.pk %}" class="link-danger">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No assignments yet.</p>
+    {% endif %}
+    {% endwith %}
+
+  {% elif user.is_student and not is_enrolled %}
+    <p>Enroll in this course to view assignments.</p>
+  {% endif %}
+</section>
+
+<!-- Enrolled students — visible to teacher/admin -->
+{% if user == course.teacher or user.is_admin %}
+<section>
+  <h3>Enrolled Students ({{ course.student_count }})</h3>
+  {% if course.enrollments.all %}
+    <table>
+      <thead><tr><th>Username</th><th>Full Name</th><th>Enrolled On</th></tr></thead>
+      <tbody>
+        {% for enrollment in course.enrollments.all %}
+        <tr>
+          <td>{{ enrollment.student.username }}</td>
+          <td>{{ enrollment.student.get_full_name|default:"—" }}</td>
+          <td>{{ enrollment.enrolled_at|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No students enrolled yet.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<br>
+<a href="{% url 'course_list' %}" class="link-back">← Back to courses</a>
+{% endblock %}

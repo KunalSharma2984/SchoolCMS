@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Edit User{% endblock %}
+
+{% block content %}
+<h2>Edit User: {{ target_user.username }}</h2>
+<form method="post" class="form-box">
+  {% csrf_token %}
+  {% for field in form %}
+    <div class="field-group">
+      <label>{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+    </div>
+  {% endfor %}
+  <div class="form-actions">
+    <button type="submit" class="btn">Save Changes</button>
+    <a href="{% url 'user_list' %}" class="btn-outline">Cancel</a>
+  </div>
+</form>
+{% endblock %}

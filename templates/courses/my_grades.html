@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}My Grades{% endblock %}
+
+{% block content %}
+<h2>My Grades</h2>
+
+{% if submissions %}
+  <table>
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Assignment</th>
+        <th>Submitted</th>
+        <th>Score</th>
+        <th>Grade</th>
+        <th>Feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in submissions %}
+      <tr>
+        <td>{{ s.assignment.course.title }}</td>
+        <td><a href="{% url 'assignment_detail' s.assignment.pk %}">{{ s.assignment.title }}</a></td>
+        <td>{{ s.submitted_at|date:"M d, Y" }}</td>
+        <td>
+          {% if s.grade is not None %}
+            {{ s.grade }} / {{ s.assignment.max_score }}
+          {% else %}
+            <span class="pending">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if s.grade is not None %}
+            <span class="grade-letter">{{ s.letter_grade }}</span>
+          {% else %}
+            <span class="pending">Pending</span>
+          {% endif %}
+        </td>
+        <td>{{ s.feedback|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>You have not submitted any assignments yet.</p>
+{% endif %}
+
+<br>
+<a href="{% url 'dashboard' %}" class="link-back">← Back to dashboard</a>
+{% endblock %}

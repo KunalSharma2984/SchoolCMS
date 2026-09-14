@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2>Welcome, {{ user.get_full_name|default:user.username }}</h2>
+<p class="role-badge role-{{ user.role }}">{{ user.get_role_display }}</p>
+
+<!-- ── STUDENT ──────────────────────────────────────────── -->
+{% if user.is_student %}
+
+<section>
+  <h3>My Enrolled Courses</h3>
+  {% if enrollments %}
+    <table>
+      <thead>
+        <tr><th>Course</th><th>Teacher</th><th>Enrolled On</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for e in enrollments %}
+        <tr>
+          <td><a href="{% url 'course_detail' e.course.pk %}">{{ e.course.title }}</a></td>
+          <td>{{ e.course.teacher.get_full_name|default:e.course.teacher.username }}</td>
+          <td>{{ e.enrolled_at|date:"M d, Y" }}</td>
+          <td><a href="{% url 'unenroll' e.course.pk %}" class="link-danger">Unenroll</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>You are not enrolled in any courses yet. <a href="{% url 'course_list' %}">Browse courses</a>.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h3>Recent Submissions</h3>
+  {% if submissions %}
+    <table>
+      <thead>
+        <tr><th>Assignment</th><th>Course</th><th>Submitted</th><th>Grade</th></tr>
+      </thead>
+      <tbody>
+        {% for s in submissions %}
+        <tr>
+          <td><a href="{% url 'assignment_detail' s.assignment.pk %}">{{ s.assignment.title }}</a></td>
+          <td>{{ s.assignment.course.title }}</td>
+          <td>{{ s.submitted_at|date:"M d, Y" }}</td>
+          <td>
+            {% if s.grade is not None %}
+              {{ s.grade }}/{{ s.assignment.max_score }} ({{ s.letter_grade }})
+            {% else %}
+              <span class="pending">Pending</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No submissions yet.</p>
+  {% endif %}
+</section>
+
+<!-- ── TEACHER ─────────────────────────────────────────── -->
+{% elif user.is_teacher %}
+
+<section>
+  <div class="section-header">
+    <h3>My Courses</h3>
+    <a href="{% url 'course_create' %}" class="btn">+ New Course</a>
+  </div>
+  {% if courses %}
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Students</th><th>Assignments</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for c in courses %}
+        <tr>
+          <td><a href="{% url 'course_detail' c.pk %}">{{ c.title }}</a></td>
+          <td>{{ c.student_count }}</td>
+          <td>{{ c.assignments.count }}</td>
+          <td>
+            <a href="{% url 'course_edit' c.pk %}">Edit</a> |
+            <a href="{% url 'course_delete' c.pk %}" class="link-danger">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No courses yet. <a href="{% url 'course_create' %}">Create one</a>.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h3>Pending Submissions to Grade</h3>
+  {% if pending_submissions %}
+    <table>
+      <thead>
+        <tr><th>Student</th><th>Assignment</th><th>Course</th><th>Submitted</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for s in pending_submissions %}
+        <tr>
+          <td>{{ s.student.username }}</td>
+          <td>{{ s.assignment.title }}</td>
+          <td>{{ s.assignment.course.title }}</td>
+          <td>{{ s.submitted_at|date:"M d, Y" }}</td>
+          <td><a href="{% url 'grade_submission' s.pk %}" class="btn-sm">Grade</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No pending submissions.</p>
+  {% endif %}
+</section>
+
+<!-- ── ADMIN ───────────────────────────────────────────── -->
+{% elif user.is_admin %}
+
+<div class="stat-row">
+  <div class="stat-card">
+    <span class="stat-num">{{ total_students }}</span>
+    <span>Students</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-num">{{ total_teachers }}</span>
+    <span>Teachers</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-num">{{ total_courses }}</span>
+    <span>Courses</span>
+  </div>
+</div>
+
+<section>
+  <div class="section-header">
+    <h3>All Courses</h3>
+    <a href="{% url 'course_list' %}" class="btn-sm">View All</a>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Course</th><th>Teacher</th><th>Students</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for c in courses %}
+      <tr>
+        <td><a href="{% url 'course_detail' c.pk %}">{{ c.title }}</a></td>
+        <td>{{ c.teacher.username }}</td>
+        <td>{{ c.student_count }}</td>
+        <td>
+          <a href="{% url 'course_edit' c.pk %}">Edit</a> |
+          <a href="{% url 'course_delete' c.pk %}" class="link-danger">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <div class="section-header">
+    <h3>Users</h3>
+    <a href="{% url 'user_list' %}" class="btn-sm">Manage All</a>
+  </div>
+</section>
+
+{% endif %}
+{% endblock %}
