@@ -1,12 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 
 from .models import Course, Enrollment, Assignment, Submission
 from .forms import CourseForm, AssignmentForm, SubmissionForm, GradeForm
 
-
-# ── Courses ──────────────────────────────────────────────────────────────────
 
 @login_required
 def course_list(request):
@@ -86,8 +85,7 @@ def course_delete(request, pk):
     return render(request, 'courses/course_confirm_delete.html', {'course': course})
 
 
-# ── Enrollment ────────────────────────────────────────────────────────────────
-
+@require_POST
 @login_required
 def enroll(request, pk):
     if not request.user.is_student():
@@ -102,6 +100,7 @@ def enroll(request, pk):
     return redirect('course_detail', pk=pk)
 
 
+@require_POST
 @login_required
 def unenroll(request, pk):
     course = get_object_or_404(Course, pk=pk)
@@ -109,8 +108,6 @@ def unenroll(request, pk):
     messages.success(request, f'Unenrolled from {course.title}.')
     return redirect('course_list')
 
-
-# ── Assignments ───────────────────────────────────────────────────────────────
 
 @login_required
 def assignment_create(request, course_pk):
@@ -153,8 +150,6 @@ def assignment_delete(request, pk):
         return redirect('course_detail', pk=course.pk)
     return render(request, 'courses/assignment_confirm_delete.html', {'assignment': assignment})
 
-
-# ── Submissions ───────────────────────────────────────────────────────────────
 
 @login_required
 def submit_assignment(request, pk):
@@ -211,8 +206,6 @@ def grade_submission(request, pk):
         'submission': submission,
     })
 
-
-# ── Student Grades View ───────────────────────────────────────────────────────
 
 @login_required
 def my_grades(request):

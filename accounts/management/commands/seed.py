@@ -1,7 +1,4 @@
-"""
-Management command: python manage.py seed
-Creates demo users, courses, assignments, and submissions.
-"""
+"""Create a small set of demo users, courses, and assignments."""
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from courses.models import Course, Enrollment, Assignment, Submission
@@ -13,16 +10,20 @@ class Command(BaseCommand):
     help = 'Seed the database with sample data'
 
     def handle(self, *args, **kwargs):
-        self.stdout.write('Seeding data...')
+        self.stdout.write('Loading demo data...')
 
-        # Admin
+        if User.objects.filter(username='admin').exists():
+            self.stdout.write(self.style.WARNING(
+                'Demo data already exists. No changes were made.'
+            ))
+            return
+
         admin = User.objects.create_superuser(
             username='admin', password='admin123',
             email='admin@school.com', role='admin',
             first_name='Admin', last_name='User'
         )
 
-        # Teachers
         t1 = User.objects.create_user(
             username='teacher1', password='pass1234',
             email='t1@school.com', role='teacher',
@@ -34,7 +35,6 @@ class Command(BaseCommand):
             first_name='Bob', last_name='Smith'
         )
 
-        # Students
         s1 = User.objects.create_user(
             username='student1', password='pass1234',
             email='s1@school.com', role='student',
@@ -46,7 +46,6 @@ class Command(BaseCommand):
             first_name='Diana', last_name='Lane'
         )
 
-        # Courses
         c1 = Course.objects.create(
             title='Introduction to Python',
             description='Learn Python from scratch. Covers variables, loops, functions, and OOP.',
@@ -63,13 +62,11 @@ class Command(BaseCommand):
             teacher=t2
         )
 
-        # Enrollments
         Enrollment.objects.create(student=s1, course=c1)
         Enrollment.objects.create(student=s1, course=c2)
         Enrollment.objects.create(student=s2, course=c1)
         Enrollment.objects.create(student=s2, course=c3)
 
-        # Assignments
         a1 = Assignment.objects.create(
             course=c1, title='Hello World Program',
             description='Write a Python program that prints Hello, World! and your name.',
@@ -86,7 +83,6 @@ class Command(BaseCommand):
             max_score=50
         )
 
-        # Submissions
         sub1 = Submission.objects.create(
             assignment=a1, student=s1,
             content='print("Hello, World!")\nprint("My name is Charlie")',

@@ -1,178 +1,84 @@
-# Student Course & Assignment Management System
+# Student Management System
 
-A full-featured Django web application for managing students, teachers, courses, assignments, submissions, and grades.
+A small Django app for keeping course work in one place. Students can join courses, submit assignments, and check grades. Teachers can create courses, review submissions, and record grades. The project uses Django templates and a little plain CSS so the moving parts stay easy to follow.
 
----
+## Built with
 
-## Tech Stack
+- Python 3.10+
+- Django 4.2
+- SQLite for local development
+- Django templates and CSS
 
-- **Backend**: Python 3.10+, Django 4.2
-- **Database**: SQLite (default) — easy to swap to PostgreSQL
-- **Frontend**: Plain HTML + CSS (no heavy framework)
-- **Auth**: Django built-in authentication with custom user roles
+## Run it locally
 
----
+1. Clone the repository and open the project directory.
+2. Create and activate a virtual environment:
 
-## User Roles & Features
+    ```bash
+    python -m venv .venv
+    # Windows
+    .venv\Scripts\activate
+    # macOS/Linux: source .venv/bin/activate
+    ```
 
-| Role    | Capabilities |
-|---------|-------------|
-| Student | Enroll in courses, view assignments, submit assignments, view grades |
-| Teacher | Create courses, create assignments, view submissions, grade students |
-| Admin   | Manage students, teachers, and courses via Django admin + custom UI |
+3. Install the dependencies:
 
----
+    ```bash
+    python -m pip install -r requirements.txt
+    ```
 
-## Project Structure
+4. Copy `.env.example` to `.env` and replace `SECRET_KEY` with a long random value. On Windows PowerShell, use `Copy-Item .env.example .env`.
+5. Create the local database:
 
-```
-django_project/
-├── manage.py
-├── requirements.txt
-├── .env.example
-├── school_cms/               ← Django project settings package
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── accounts/                 ← Custom user model + auth views
-│   ├── models.py
-│   ├── views.py
-│   ├── forms.py
-│   ├── urls.py
-│   └── admin.py
-├── courses/                  ← Courses, assignments, submissions, grades
-│   ├── models.py
-│   ├── views.py
-│   ├── forms.py
-│   ├── urls.py
-│   └── admin.py
-├── templates/
-│   ├── base.html
-│   ├── accounts/
-│   │   ├── login.html
-│   │   ├── register.html
-│   │   └── dashboard.html
-│   └── courses/
-│       ├── course_list.html
-│       ├── course_detail.html
-│       ├── assignment_detail.html
-│       ├── submission_list.html
-│       └── grade_form.html
-└── static/
-    └── css/
-        └── style.css
-```
+    ```bash
+    python manage.py migrate
+    ```
 
----
+6. Start the server:
 
-## Setup & Run (Step by Step)
+    ```bash
+    python manage.py runserver
+    ```
 
-### 1. Prerequisites
+Open http://127.0.0.1:8000/ in a browser. Create your own administrator with `python manage.py createsuperuser`, or load the demo records with `python manage.py seed`.
 
-Make sure you have Python 3.10+ installed:
-```bash
-python --version
-```
+## Demo data
 
-### 2. Clone / Download the project
+The seed command is intended for local demos only. It creates one admin, two teachers, two students, three courses, and a few assignments. The command does nothing when the `admin` demo account already exists.
+
+The demo passwords are printed by the command after it runs. Do not use them for a real deployment.
+
+## Tests and checks
+
+Run the same checks used by CI:
 
 ```bash
-cd wherever-you-want
-# if using git:
-git clone <repo-url> django_project
-cd django_project
+python manage.py test
+python manage.py check
 ```
 
-### 3. Create a virtual environment
+## Configuration
 
-```bash
-python -m venv venv
+The repository intentionally keeps deployment configuration small. Set these values in `.env` or in the hosting provider's environment:
 
-# Activate it:
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-source venv/bin/activate
-```
+| Variable | Purpose |
+| --- | --- |
+| `SECRET_KEY` | Django signing key; required in every environment |
+| `DEBUG` | Set to `False` outside local development |
+| `ALLOWED_HOSTS` | Comma-separated host names |
+| `SECURE_SSL_REDIRECT` | Set to `True` when HTTPS is configured |
 
-### 4. Install dependencies
+The default database is SQLite. For production, configure a managed database and update the `DATABASES` setting for the deployment environment.
 
-```bash
-pip install -r requirements.txt
-```
+## Useful pages
 
-### 5. Set up environment variables
+- `/login/` and `/register/` for accounts
+- `/dashboard/` for the role-specific home page
+- `/courses/` for courses and assignments
+- `/admin/` for Django's admin site
 
-```bash
-cp .env.example .env
-# Open .env and set a SECRET_KEY (any random string is fine for development)
-```
+## Project layout
 
-### 6. Apply database migrations
+`accounts/` contains the custom user model and authentication views. `courses/` contains courses, assignments, submissions, and grades. Templates live in `templates/`, styles in `static/`, and the small demo loader is `accounts/management/commands/seed.py`.
 
-```bash
-python manage.py migrate
-```
-
-### 7. Create a superuser (Admin account)
-
-```bash
-python manage.py createsuperuser
-# Follow the prompts — this gives you admin access
-```
-
-### 8. (Optional) Load sample data
-
-```bash
-python manage.py loaddata sample_data.json
-```
-
-### 9. Run the development server
-
-```bash
-python manage.py runserver
-```
-
-Open your browser at **http://127.0.0.1:8000**
-
----
-
-## Default Admin Panel
-
-Visit **http://127.0.0.1:8000/admin** and log in with your superuser credentials to manage everything directly.
-
----
-
-## Quick Account Setup (Manual)
-
-1. Go to `/register/` and create accounts
-2. Log in to `/admin/` as superuser
-3. Edit the user and set their **role** to `student`, `teacher`, or `admin`
-4. Log back in as that user to see their dashboard
-
----
-
-## Database (Switch to PostgreSQL)
-
-1. Install: `pip install psycopg2-binary`
-2. In `.env` set: `DATABASE_URL=postgresql://user:password@localhost:5432/school_db`
-3. In `settings.py` uncomment the PostgreSQL `DATABASES` block
-
----
-
-## Key URLs
-
-| URL | Description |
-|-----|-------------|
-| `/` | Home / redirect to dashboard |
-| `/login/` | Login page |
-| `/register/` | Register new account |
-| `/dashboard/` | Role-based dashboard |
-| `/courses/` | Course list |
-| `/courses/<id>/` | Course detail |
-| `/courses/create/` | Create course (teacher) |
-| `/courses/<id>/enroll/` | Enroll in course (student) |
-| `/assignments/<id>/` | Assignment detail |
-| `/assignments/<id>/submit/` | Submit assignment (student) |
-| `/submissions/<id>/grade/` | Grade a submission (teacher) |
-| `/admin/` | Django admin panel |
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the short development workflow and [SECURITY.md](SECURITY.md) for reporting security issues.

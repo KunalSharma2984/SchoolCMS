@@ -37,3 +37,11 @@ class GradeForm(forms.ModelForm):
         widgets = {
             'feedback': forms.Textarea(attrs={'rows': 3}),
         }
+
+    def clean_grade(self):
+        grade = self.cleaned_data.get('grade')
+        if grade is not None and grade > self.instance.assignment.max_score:
+            raise forms.ValidationError(
+                f'Grade cannot be higher than {self.instance.assignment.max_score}.'
+            )
+        return grade

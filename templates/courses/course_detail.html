@@ -19,17 +19,21 @@
   <p>{{ course.description }}</p>
 {% endif %}
 
-<!-- Enroll / Unenroll -->
 {% if user.is_student %}
   {% if is_enrolled %}
-    <p><span class="badge-enrolled">You are enrolled</span>
-    <a href="{% url 'unenroll' course.pk %}" class="link-danger"> (Unenroll)</a></p>
+    <p><span class="badge-enrolled">You are enrolled</span></p>
+    <form method="post" action="{% url 'unenroll' course.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="link-danger">Unenroll</button>
+    </form>
   {% else %}
-    <a href="{% url 'enroll' course.pk %}" class="btn">Enroll in this Course</a>
+    <form method="post" action="{% url 'enroll' course.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="btn">Enroll in this Course</button>
+    </form>
   {% endif %}
 {% endif %}
 
-<!-- Assignments section -->
 <section>
   <div class="section-header">
     <h3>Assignments</h3>
@@ -101,7 +105,6 @@
   {% endif %}
 </section>
 
-<!-- Enrolled students — visible to teacher/admin -->
 {% if user == course.teacher or user.is_admin %}
 <section>
   <h3>Enrolled Students ({{ course.student_count }})</h3>

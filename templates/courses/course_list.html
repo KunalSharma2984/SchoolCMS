@@ -22,7 +22,10 @@
         {% if course.pk in enrolled_ids %}
           <span class="badge-enrolled">Enrolled</span>
         {% else %}
-          <a href="{% url 'enroll' course.pk %}" class="btn-sm">Enroll</a>
+          <form method="post" action="{% url 'enroll' course.pk %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-sm">Enroll</button>
+          </form>
         {% endif %}
       {% endif %}
     </div>
